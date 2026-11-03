@@ -107,43 +107,68 @@
         .loco-a { background-color: #4CAF50; border: 4px solid #2E7D32; }
         .loco-an { background-color: #2196F3; border: 4px solid #1565C0; }
 
-        /* Стили для вагонов */
+        /* СТИЛИ ВАГОНОВ (ОБНОВЛЕНО) */
         .wagon {
-            width: 120px;
-            height: 90px;
-            background-color: #f0f0f0;
-            border: 4px solid #999;
-            border-radius: 8px;
+            width: 145px;  /* Увеличено на 20% */
+            height: 110px; /* Увеличено на 20% */
+            background: transparent; /* Убран фон */
+            border: none; /* Убрана рамка */
             position: relative;
             z-index: 5;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #aaa;
-            font-size: 1rem;
             flex-shrink: 0;
+            margin: 0 -2px; /* Легкая сцепка без сильного наложения */
         }
 
-        .train-a .wagon { margin-right: -4px; }
-        .train-an .wagon { margin-left: -4px; }
+        /* Эффект наведения при перетаскивании на пустой вагон */
+        .wagon.active-target.drag-over {
+            transform: scale(1.1) translateY(-5px);
+            filter: drop-shadow(0 0 15px #4CAF50);
+            transition: all 0.2s;
+        }
+
+        /* Стили для картинки внутри вагона */
+        .wagon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none; /* Чтобы картинка не мешала ловить клик по вагону */
+        }
+
+        /* Текст, который появляется при правильном ответе */
+        .wagon .wagon-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #2E7D32;
+            font-weight: bold;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.85); /* Полупрозрачный фон под текст для читаемости */
+            padding: 5px 10px;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Подсветка заполненного вагона */
+        .wagon.filled {
+            filter: drop-shadow(0 0 8px #4CAF50);
+        }
+
+        /* Пульсация для ПУСТОГО вагона (мигающая оранжевая обводка) */
+        @keyframes pulse {
+            0% { filter: drop-shadow(0 0 2px #ff9800); }
+            50% { filter: drop-shadow(0 0 15px #ff9800); }
+            100% { filter: drop-shadow(0 0 2px #ff9800); }
+        }
 
         .wagon.active-target {
-            border-color: #ff9800;
-            background-color: #fff3e0;
-            box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
             animation: pulse 1.5s infinite;
-        }
-
-        .wagon.drag-over {
-            transform: scale(1.1);
-            background-color: #e8f5e9;
-            border-color: #4CAF50;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
-            50% { box-shadow: 0 0 25px rgba(255, 152, 0, 0.8); }
-            100% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
+            cursor: pointer;
         }
 
         .score-board {
@@ -163,7 +188,6 @@
 </head>
 <body>
 
-    <!-- ЗВУК -->
     <audio id="hornSound" src="https://raw.githubusercontent.com/aexqodev/Train/main/3-1.mp3" preload="auto"></audio>
 
     <div class="score-board">Счет: <span id="score">0</span></div>
@@ -171,25 +195,15 @@
 
     <div class="railway-top">
         <div class="train train-a" id="trainA">
-            
-            <!-- ================================================== -->
-            <!-- 👇👇👇 ЗАМЕНИТЕ ЭТО НА КАРТИНКУ ПАРОВОЗА A 👇👇👇 -->
-            <!-- ================================================== -->
-            <!-- Пример: <img src="https://raw.githubusercontent.com/.../loco_a.png" class="locomotive" style="object-fit: contain; background: none; border: none;"> -->
+            <!-- ПАРОВОЗ А -->
             <div class="locomotive loco-a">A</div>
-            
         </div>
     </div>
 
     <div class="railway-bottom">
         <div class="train train-an" id="trainAN">
-            
-            <!-- ================================================== -->
-            <!-- 👇👇👇 ЗАМЕНИТЕ ЭТО НА КАРТИНКУ ПАРОВОЗА AN 👇👇👇 -->
-            <!-- ================================================== -->
-            <!-- Пример: <img src="https://raw.githubusercontent.com/.../loco_an.png" class="locomotive" style="object-fit: contain; background: none; border: none;"> -->
+            <!-- ПАРОВОЗ AN -->
             <div class="locomotive loco-an">AN</div>
-            
         </div>
     </div>
 
@@ -276,18 +290,14 @@
 
         animateTrains();
 
+        // СОЗДАНИЕ ВАГОНА
         function createWagon(trainElement, articleType) {
             const wagon = document.createElement('div');
             wagon.className = 'wagon active-target';
             wagon.dataset.article = articleType;
             
-            // =========================================================
-            // 👇👇👇 СЮДА ВСТАВЬТЕ ССЫЛКУ НА ВАШУ КАРТИНКУ ВАГОНА 👇👇👇
-            // =========================================================
-            // Было: wagon.textContent = "Кинь сюда";
-            // Стало: 
-            wagon.innerHTML = '<img src="Вагон2-Photoroom.png" style="width: 100%; height: 100%; object-fit: contain;">';
-            // =========================================================
+            // Убедитесь, что название файла правильное (регистр букв важен!)
+            wagon.innerHTML = '<img src="Вагон2-Photoroom.png" alt="Вагон">';
             
             trainElement.appendChild(wagon);
             return wagon;
@@ -314,7 +324,9 @@
         function setupDropEvents(wagon) {
             wagon.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                wagon.classList.add('drag-over');
+                if (wagon.classList.contains('active-target')) {
+                    wagon.classList.add('drag-over');
+                }
             });
 
             wagon.addEventListener('dragleave', () => {
@@ -332,21 +344,21 @@
                     score += 10;
                     scoreElement.textContent = score;
                     
+                    // Вагон становится заполненным
                     wagon.classList.remove('active-target');
-                    wagon.style.backgroundColor = '#c8e6c9';
-                    wagon.style.borderColor = '#4CAF50';
+                    wagon.classList.add('filled');
                     
-                    // Если вы заменили картинку вагона выше, то при правильном ответе
-                    // картинка вагона заменится на само слово. 
-                    // Если хотите, чтобы картинка оставалась, а слово появлялось ПОВЕРХ, 
-                    // удалите строку ниже.
-                    wagon.textContent = currentWord.word; 
+                    // Добавляем слово ПОВЕРХ картинки вагона
+                    const textOverlay = document.createElement('div');
+                    textOverlay.className = 'wagon-text';
+                    textOverlay.textContent = currentWord.word;
+                    wagon.appendChild(textOverlay);
                     
-                    wagon.style.color = '#2E7D32';
-                    wagon.style.fontWeight = 'bold';
+                    // Отключаем перетаскивание в этот вагон
                     wagon.style.pointerEvents = 'none';
 
                     const trainElement = wagon.closest('.train');
+                    // Добавляем новый вагон, если пустых не осталось
                     if (!hasActiveWagon(trainElement)) {
                         const newWagon = createWagon(trainElement, targetArticle);
                         setupDropEvents(newWagon);
@@ -396,7 +408,7 @@
         document.body.addEventListener('dragover', (e) => e.preventDefault());
         document.body.addEventListener('drop', (e) => {
             e.preventDefault();
-            if (!e.target.classList.contains('wagon')) {
+            if (!e.target.classList.contains('wagon') && !e.target.closest('.wagon')) {
                 dropZone.appendChild(wordCard);
             }
         });
