@@ -3,185 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Интерактивный поезд: Артикли a и an</title>
+    <title>Поезд Артиклей: Игра</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #e6f2ff; /* Светло-голубой фон (небо) */
+            background-color: #e6f2ff;
             font-family: 'Comic Sans MS', 'Arial', sans-serif;
             overflow: hidden; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             height: 100vh;
+            user-select: none; /* Запрещаем выделять текст при перетаскивании */
         }
 
+        /* ---------------- ИНТЕРФЕЙС ---------------- */
         h1 {
+            text-align: center;
             color: #333;
             margin-top: 20px;
-            text-align: center;
-            font-size: 2.5rem;
         }
 
-        /* Табло с заданием */
-        .task-board {
+        /* Зона, куда падает слово (Центр) */
+        .drop-zone {
             position: absolute;
-            top: 100px;
-            padding: 20px 40px;
-            background-color: white;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 100px;
+            border: 4px dashed #999;
             border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            text-align: center;
-            font-size: 2.5rem; 
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+
+        /* Карточка со словом */
+        .word-card {
+            background-color: #fff;
+            border: 3px solid #333;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 2rem;
             font-weight: bold;
             color: #333;
-            min-height: 100px;
-            min-width: 500px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 5px dashed #ff9800;
-            z-index: 10;
-        }
-
-        .task-board span {
-            color: #d32f2f;
-            margin-right: 15px;
-        }
-
-        /* Кнопка для запуска поезда */
-        .play-btn {
-            position: absolute;
-            top: 250px;
-            padding: 15px 30px;
-            font-size: 1.5rem;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            display: none;
-            z-index: 10;
-            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+            cursor: grab;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             transition: transform 0.1s;
         }
-
-        .play-btn:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
+        
+        .word-card:active {
+            cursor: grabbing;
+            transform: scale(1.1);
         }
 
-        /* Контейнер для железной дороги */
-        .railway {
-            width: 100%;
-            height: 400px; 
+        /* ---------------- ЖЕЛЕЗНАЯ ДОРОГА И ПОЕЗДА ---------------- */
+        
+        /* Верхние рельсы (для поезда А) */
+        .railway-top {
             position: absolute;
-            bottom: 50px;
-            overflow: hidden;
-            border-bottom: 10px solid #555; /* Рельсы */
-            border-top: 12px dashed #888;   /* Шпалы */
+            top: 15%;
+            width: 100%;
+            height: 250px;
+            border-bottom: 8px solid #555;
             background-color: #d2d2d2;
+            overflow: hidden;
         }
 
-        /* Сам поезд */
+        /* Нижние рельсы (для поезда AN) */
+        .railway-bottom {
+            position: absolute;
+            bottom: 15%;
+            width: 100%;
+            height: 250px;
+            border-top: 8px solid #555;
+            background-color: #d2d2d2;
+            overflow: hidden;
+        }
+
+        /* Общие стили для поездов */
         .train {
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             position: absolute;
-            bottom: 10px; 
-            left: 100%;
-            animation: moveTrain 25s linear infinite; 
-            cursor: pointer;
+            height: 100%;
         }
 
-        /* Пауза при клике */
+        /* Поезд "A" едет влево */
+        .train-a {
+            right: -400px;
+            animation: moveLeft 12s linear infinite;
+        }
+
+        /* Поезд "AN" едет вправо */
+        .train-an {
+            left: -400px;
+            animation: moveRight 12s linear infinite;
+        }
+
+        /* Анимация остановки поезда */
         .train.paused {
             animation-play-state: paused;
         }
 
-        /* Картинки вагонов */
-        .train img {
-            height: 300px; 
-            margin-right: -10px; 
-            object-fit: contain;
-            transition: transform 0.2s, filter 0.2s;
+        /* Визуализация локомотива (пока без картинок) */
+        .locomotive {
+            width: 250px;
+            height: 180px;
+            border-radius: 20px 20px 5px 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 6rem;
+            font-weight: 900;
+            color: white;
+            box-shadow: inset 0 -10px 0 rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 10;
         }
 
-        /* Эффект при наведении на вагон */
-        .train img:hover {
-            transform: translateY(-15px) scale(1.05); 
-            filter: drop-shadow(0px 15px 10px rgba(0,0,0,0.3));
+        /* Стиль локомотива А */
+        .loco-a {
+            background-color: #4CAF50; /* Зеленый */
+            border: 5px solid #2E7D32;
         }
 
-        /* Анимация движения */
-        @keyframes moveTrain {
-            0% { left: 100%; }
-            100% { left: -200%; } 
+        /* Стиль локомотива AN */
+        .loco-an {
+            background-color: #2196F3; /* Синий */
+            border: 5px solid #1565C0;
+        }
+
+        /* Прицепленные вагоны (визуальный эффект) */
+        .wagon {
+            width: 200px;
+            height: 150px;
+            background-color: #f0f0f0;
+            border: 5px solid #999;
+            border-radius: 10px;
+            margin: 0 -5px; /* Сцепка */
+            position: relative;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #aaa;
+            font-size: 1.2rem;
+        }
+
+        /* Визуальный эффект "ловушки" (подсветка при наведении) */
+        .drop-target.drag-over {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px 10px rgba(255, 235, 59, 0.8);
+            transition: all 0.2s;
+        }
+
+        /* Анимации движения */
+        @keyframes moveLeft {
+            0% { right: -600px; }
+            100% { right: 100%; }
+        }
+
+        @keyframes moveRight {
+            0% { left: -600px; }
+            100% { left: 100%; }
+        }
+
+        /* Очки */
+        .score-board {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 30;
         }
     </style>
 </head>
 <body>
 
-    <h1>Нажми на вагон, чтобы прочитать правило!</h1>
+    <div class="score-board">Счет: <span id="score">0</span></div>
+    <h1>Перетащи слово на правильный паровоз!</h1>
 
-    <!-- Табло с заданием -->
-    <div class="task-board" id="taskBoard">
-        Нажми на проезжающий вагон...
-    </div>
-
-    <!-- Кнопка продолжить -->
-    <button class="play-btn" id="playBtn">Поехали дальше! ▶</button>
-
-    <!-- Железная дорога -->
-    <div class="railway">
-        <div class="train" id="train">
-            <!-- Вагоны добавляются через JavaScript -->
+    <!-- ВЕРХНИЙ ПОЕЗД (A) -->
+    <div class="railway-top">
+        <div class="train train-a" id="trainA">
+            <div class="locomotive loco-a drop-target" data-article="a">A</div>
+            <div class="wagon">вагон</div>
+            <div class="wagon">вагон</div>
         </div>
     </div>
 
+    <!-- НИЖНИЙ ПОЕЗД (AN) -->
+    <div class="railway-bottom">
+        <div class="train train-an" id="trainAN">
+            <div class="locomotive loco-an drop-target" data-article="an">AN</div>
+            <div class="wagon">вагон</div>
+            <div class="wagon">вагон</div>
+        </div>
+    </div>
+
+    <!-- ЦЕНТРАЛЬНАЯ ЗОНА СО СЛОВОМ -->
+    <div class="drop-zone" id="dropZone">
+        <div class="word-card" id="wordCard" draggable="true">Cat</div>
+    </div>
+
     <script>
-        // ВАШИ КАРТИНКИ И НАЗВАНИЯ ВАГОНОВ
-        const trainCars = [
-            { 
-                id: 'vagon1', 
-                // Ссылка на ваш первый файл
-                img: 'https://raw.githubusercontent.com/aexqodev/Train/main/Вагон2-Photoroom.png', 
-                text: 'an egg, an orange, an ant' 
-            },
-            { 
-                id: 'vagon2', 
-                // Ссылка на ваш второй файл
-                img: 'https://raw.githubusercontent.com/aexqodev/Train/main/Вагон3-Photoroom.png', 
-                text: 'a cat, a nest, a jug, a lamp' 
-            }
+        // Словарь слов для игры
+        const words = [
+            { word: "Apple", article: "an" },
+            { word: "Cat", article: "a" },
+            { word: "Elephant", article: "an" },
+            { word: "Dog", article: "a" },
+            { word: "Orange", article: "an" },
+            { word: "Book", article: "a" },
+            { word: "Ant", article: "an" },
+            { word: "Car", article: "a" },
+            { word: "Egg", article: "an" },
+            { word: "Jug", article: "a" }
         ];
 
-        const trainContainer = document.getElementById('train');
-        const taskBoard = document.getElementById('taskBoard');
-        const playBtn = document.getElementById('playBtn');
+        let currentWord = null;
+        let score = 0;
 
-        // Собираем поезд
-        trainCars.forEach(car => {
-            const img = document.createElement('img');
-            img.src = car.img;
-            img.alt = car.id;
-            img.dataset.text = car.text; 
+        const wordCard = document.getElementById('wordCard');
+        const dropZone = document.getElementById('dropZone');
+        const scoreElement = document.getElementById('score');
+        
+        const trainA = document.getElementById('trainA');
+        const trainAN = document.getElementById('trainAN');
+        const targets = document.querySelectorAll('.drop-target');
+
+        // Функция загрузки нового слова
+        function loadNewWord() {
+            // Выбираем случайное слово
+            const randomIndex = Math.floor(Math.random() * words.length);
+            currentWord = words[randomIndex];
             
-            img.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                trainContainer.classList.add('paused');
-                taskBoard.innerHTML = `<span>👉</span> ${car.text}`;
-                playBtn.style.display = 'block';
-            });
+            wordCard.textContent = currentWord.word;
+            wordCard.style.display = 'block';
+            
+            // Возвращаем карточку в центр (на случай, если она осталась где-то)
+            dropZone.appendChild(wordCard);
+        }
 
-            trainContainer.appendChild(img);
+        // Инициализация первого слова
+        loadNewWord();
+
+        // --- ЛОГИКА DRAG AND DROP ---
+
+        // 1. Начало перетаскивания
+        wordCard.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', currentWord.article);
+            e.dataTransfer.effectAllowed = 'move';
         });
 
-        playBtn.addEventListener('click', () => {
-            trainContainer.classList.remove('paused');
-            taskBoard.innerHTML = 'Нажми на проезжающий вагон...';
-            playBtn.style.display = 'none';
+        // 2. Наведение на локомотив
+        targets.forEach(target => {
+            target.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Разрешаем сброс
+                target.classList.add('drag-over'); // Подсветка
+            });
+
+            target.addEventListener('dragleave', () => {
+                target.classList.remove('drag-over');
+            });
+
+            // 3. Сброс (отпускание мышки)
+            target.addEventListener('drop', (e) => {
+                e.preventDefault();
+                target.classList.remove('drag-over');
+
+                const targetArticle = target.getAttribute('data-article'); // "a" или "an"
+                const wordArticle = currentWord.article; // Правильный ответ
+
+                if (targetArticle === wordArticle) {
+                    // ПРАВИЛЬНО
+                    score += 10;
+                    scoreElement.textContent = score;
+                    
+                    // Эффект успеха
+                    target.style.transform = "scale(1.1)";
+                    setTimeout(() => { target.style.transform = "scale(1)"; }, 200);
+                    
+                    // Прячем карточку и грузим новое слово
+                    wordCard.style.display = 'none';
+                    setTimeout(loadNewWord, 300);
+
+                } else {
+                    // НЕПРАВИЛЬНО
+                    // Останавливаем тот поезд, на который уронили
+                    const trainToPause = target.closest('.train');
+                    trainToPause.classList.add('paused');
+                    
+                    // Эффект ошибки (тряска)
+                    wordCard.style.transform = "translateX(10px)";
+                    setTimeout(() => { wordCard.style.transform = "translateX(-10px)"; }, 50);
+                    setTimeout(() => { wordCard.style.transform = "translateX(0)"; }, 100);
+
+                    // Возвращаем карточку в центр через секунду
+                    setTimeout(() => {
+                        dropZone.appendChild(wordCard);
+                    }, 500);
+                }
+            });
+        });
+
+        // Возможность перетаскивать карточку обратно, если она упала мимо
+        document.body.addEventListener('dragover', (e) => e.preventDefault());
+        document.body.addEventListener('drop', (e) => {
+            e.preventDefault();
+            // Если уронили мимо цели, возвращаем в зону
+            if (e.target !== wordCard && !e.target.classList.contains('drop-target')) {
+                dropZone.appendChild(wordCard);
+            }
         });
 
     </script>
