@@ -91,20 +91,28 @@
         .locomotive {
             width: 150px;
             height: 110px;
-            border-radius: 15px 15px 5px 5px;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 4rem;
             font-weight: 900;
             color: white;
-            box-shadow: inset 0 -8px 0 rgba(0,0,0,0.2);
             z-index: 10;
             flex-shrink: 0;
+            background: transparent;
+            border: none;
         }
 
-        .loco-a { background-color: #4CAF50; border: 4px solid #2E7D32; }
-        .loco-an { background-color: #2196F3; border: 4px solid #1565C0; }
+        /* Оставляем буквы на случай, если картинки еще нет */
+        .loco-a { background-color: #4CAF50; border: 4px solid #2E7D32; border-radius: 15px 15px 5px 5px;}
+        .loco-an { background-color: #2196F3; border: 4px solid #1565C0; border-radius: 15px 15px 5px 5px;}
+
+        /* Если вставили картинку, стили фона убираются автоматически */
+        img.locomotive {
+            background: transparent !important;
+            border: none !important;
+            object-fit: contain;
+        }
 
         .wagon {
             width: 145px; 
@@ -127,7 +135,6 @@
             pointer-events: none; 
         }
 
-        /* Стили для текста внутри вагона */
         .wagon .wagon-text {
             position: absolute;
             top: 50%;
@@ -144,14 +151,14 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Подсветка заполненного вагона (зеленая для А, синяя для AN) */
+        /* Подсветка заполненных вагонов */
         .train-a .wagon.filled { filter: drop-shadow(0 0 8px #4CAF50); }
         .train-an .wagon.filled { filter: drop-shadow(0 0 8px #2196F3); }
 
         .train-a .wagon.filled .wagon-text { color: #2E7D32; }
         .train-an .wagon.filled .wagon-text { color: #1565C0; }
 
-        /* Пульсация для ПУСТОГО вагона (зеленая для А, синяя для AN) */
+        /* Пульсация для пустых вагонов */
         @keyframes pulse-a {
             0% { filter: drop-shadow(0 0 2px #4CAF50); }
             50% { filter: drop-shadow(0 0 15px #4CAF50); }
@@ -203,31 +210,48 @@
 
     <div class="railway-top">
         <div class="train train-a" id="trainA">
+            
+            <!-- ============================================================== -->
+            <!-- 👇👇👇 ЗАМЕНИТЕ ЭТО НА КАРТИНКУ ПАРОВОЗА "A" 👇👇👇 -->
+            <!-- ============================================================== -->
+            <!-- Для этого удалите строку <div class="locomotive loco-a">A</div> ниже и вставьте: -->
+            <!-- <img src="ССЫЛКА_НА_ПАРОВОЗ_A.png" class="locomotive" alt="A"> -->
+            
             <div class="locomotive loco-a">A</div>
+            
         </div>
     </div>
 
     <div class="railway-bottom">
         <div class="train train-an" id="trainAN">
+            
+            <!-- ============================================================== -->
+            <!-- 👇👇👇 ЗАМЕНИТЕ ЭТО НА КАРТИНКУ ПАРОВОЗА "AN" 👇👇👇 -->
+            <!-- ============================================================== -->
+            <!-- Для этого удалите строку <div class="locomotive loco-an">AN</div> ниже и вставьте: -->
+            <!-- <img src="ССЫЛКА_НА_ПАРОВОЗ_AN.png" class="locomotive" alt="AN"> -->
+            
             <div class="locomotive loco-an">AN</div>
+            
         </div>
     </div>
 
     <div class="drop-zone" id="dropZone">
-        <div class="word-card" id="wordCard" draggable="true">Cat</div>
+        <div class="word-card" id="wordCard" draggable="true">cat</div>
     </div>
 
     <script>
+        // Все слова с МАЛЕНЬКОЙ БУКВЫ
         const words = [
-            { word: "Ant", article: "an" }, { word: "Bed", article: "a" }, { word: "Cat", article: "a" },
-            { word: "Dog", article: "a" }, { word: "Egg", article: "an" }, { word: "Flag", article: "a" },
-            { word: "Glass", article: "a" }, { word: "Horse", article: "a" }, { word: "Ink", article: "an" },
-            { word: "Jug", article: "a" }, { word: "Kangaroo", article: "a" }, { word: "Lamp", article: "a" },
-            { word: "Mouse", article: "a" }, { word: "Nest", article: "a" }, { word: "Orange", article: "an" },
-            { word: "Pin", article: "a" }, { word: "Queen", article: "a" }, { word: "Rabbit", article: "a" },
-            { word: "Snake", article: "a" }, { word: "Tree", article: "a" }, { word: "Umbrella", article: "an" },
-            { word: "Vest", article: "a" }, { word: "Window", article: "a" }, { word: "Box", article: "a" },
-            { word: "Yacht", article: "a" }, { word: "Zip", article: "a" }
+            { word: "ant", article: "an" }, { word: "bed", article: "a" }, { word: "cat", article: "a" },
+            { word: "dog", article: "a" }, { word: "egg", article: "an" }, { word: "flag", article: "a" },
+            { word: "glass", article: "a" }, { word: "horse", article: "a" }, { word: "ink", article: "an" },
+            { word: "jug", article: "a" }, { word: "kangaroo", article: "a" }, { word: "lamp", article: "a" },
+            { word: "mouse", article: "a" }, { word: "nest", article: "a" }, { word: "orange", article: "an" },
+            { word: "pin", article: "a" }, { word: "queen", article: "a" }, { word: "rabbit", article: "a" },
+            { word: "snake", article: "a" }, { word: "tree", article: "a" }, { word: "umbrella", article: "an" },
+            { word: "vest", article: "a" }, { word: "window", article: "a" }, { word: "box", article: "a" },
+            { word: "yacht", article: "a" }, { word: "zip", article: "a" }
         ];
 
         let currentWord = null;
@@ -297,13 +321,18 @@
         animateTrains();
 
         // =====================================================================
-        // 👇👇👇 СЮДА ВСТАВЬТЕ ССЫЛКИ НА ВАШИ КАРТИНКИ ВАГОНОВ 👇👇👇
+        // 👇👇👇 СЮДА ВСТАВЬТЕ ССЫЛКИ НА ВАШИ 5 КАРТИНОК ВАГОНОВ 👇👇👇
         // =====================================================================
-        // Для верхнего поезда (Артикль A) - например, зеленый вагон
-        const WAGON_IMG_A = "Вагон2-Photoroom.png"; 
+        // Этот массив используется для ОБОИХ поездов.
+        // Цвета будут выбираться случайным образом из этого списка.
         
-        // Для нижнего поезда (Артикль AN) - например, синий или красный вагон
-        const WAGON_IMG_AN = "Вагон3-Photoroom.png"; 
+        const WAGON_IMAGES = [
+            "Вагон1-Photoroom.png", // Картинка 1
+            "Вагон2-Photoroom.png", // Картинка 2
+            "Вагон3-Photoroom.png", // Картинка 3
+            "Вагон4-Photoroom.png", // Картинка 4
+            "Вагон5-Photoroom.png"  // Картинка 5
+        ];
         // =====================================================================
 
         function createWagon(trainElement, articleType) {
@@ -311,8 +340,9 @@
             wagon.className = 'wagon active-target';
             wagon.dataset.article = articleType;
             
-            // Выбираем картинку в зависимости от поезда
-            let imgSrc = (articleType === 'a') ? WAGON_IMG_A : WAGON_IMG_AN;
+            // Выбираем СЛУЧАЙНУЮ картинку из массива
+            const randomIndex = Math.floor(Math.random() * WAGON_IMAGES.length);
+            const imgSrc = WAGON_IMAGES[randomIndex];
             
             wagon.innerHTML = `<img src="${imgSrc}" alt="Вагон">`;
             
@@ -334,6 +364,8 @@
         function resetTrain(trainElement, articleType) {
             const oldWagons = trainElement.querySelectorAll('.wagon');
             oldWagons.forEach(w => w.remove());
+            
+            // Создаем один новый вагон (цвет будет случайным)
             const newWagon = createWagon(trainElement, articleType);
             setupDropEvents(newWagon);
         }
@@ -366,7 +398,7 @@
                     
                     const textOverlay = document.createElement('div');
                     textOverlay.className = 'wagon-text';
-                    textOverlay.textContent = currentWord.word;
+                    textOverlay.textContent = currentWord.word; 
                     wagon.appendChild(textOverlay);
                     
                     wagon.style.pointerEvents = 'none';
