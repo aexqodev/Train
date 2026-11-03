@@ -88,7 +88,6 @@
         .train-a { flex-direction: row-reverse; }
         .train-an { flex-direction: row; }
 
-        /* Стили для паровозов */
         .locomotive {
             width: 150px;
             height: 110px;
@@ -107,37 +106,28 @@
         .loco-a { background-color: #4CAF50; border: 4px solid #2E7D32; }
         .loco-an { background-color: #2196F3; border: 4px solid #1565C0; }
 
-        /* СТИЛИ ВАГОНОВ (ОБНОВЛЕНО) */
         .wagon {
-            width: 145px;  /* Увеличено на 20% */
-            height: 110px; /* Увеличено на 20% */
-            background: transparent; /* Убран фон */
-            border: none; /* Убрана рамка */
+            width: 145px; 
+            height: 110px; 
+            background: transparent; 
+            border: none; 
             position: relative;
             z-index: 5;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-shrink: 0;
-            margin: 0 -2px; /* Легкая сцепка без сильного наложения */
+            margin: 0 -2px; 
         }
 
-        /* Эффект наведения при перетаскивании на пустой вагон */
-        .wagon.active-target.drag-over {
-            transform: scale(1.1) translateY(-5px);
-            filter: drop-shadow(0 0 15px #4CAF50);
-            transition: all 0.2s;
-        }
-
-        /* Стили для картинки внутри вагона */
         .wagon img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            pointer-events: none; /* Чтобы картинка не мешала ловить клик по вагону */
+            pointer-events: none; 
         }
 
-        /* Текст, который появляется при правильном ответе */
+        /* Стили для текста внутри вагона */
         .wagon .wagon-text {
             position: absolute;
             top: 50%;
@@ -146,7 +136,7 @@
             color: #2E7D32;
             font-weight: bold;
             font-size: 1.2rem;
-            background: rgba(255, 255, 255, 0.85); /* Полупрозрачный фон под текст для читаемости */
+            background: rgba(255, 255, 255, 0.85); 
             padding: 5px 10px;
             border-radius: 8px;
             pointer-events: none;
@@ -154,21 +144,39 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Подсветка заполненного вагона */
-        .wagon.filled {
-            filter: drop-shadow(0 0 8px #4CAF50);
+        /* Подсветка заполненного вагона (зеленая для А, синяя для AN) */
+        .train-a .wagon.filled { filter: drop-shadow(0 0 8px #4CAF50); }
+        .train-an .wagon.filled { filter: drop-shadow(0 0 8px #2196F3); }
+
+        .train-a .wagon.filled .wagon-text { color: #2E7D32; }
+        .train-an .wagon.filled .wagon-text { color: #1565C0; }
+
+        /* Пульсация для ПУСТОГО вагона (зеленая для А, синяя для AN) */
+        @keyframes pulse-a {
+            0% { filter: drop-shadow(0 0 2px #4CAF50); }
+            50% { filter: drop-shadow(0 0 15px #4CAF50); }
+            100% { filter: drop-shadow(0 0 2px #4CAF50); }
         }
 
-        /* Пульсация для ПУСТОГО вагона (мигающая оранжевая обводка) */
-        @keyframes pulse {
-            0% { filter: drop-shadow(0 0 2px #ff9800); }
-            50% { filter: drop-shadow(0 0 15px #ff9800); }
-            100% { filter: drop-shadow(0 0 2px #ff9800); }
+        @keyframes pulse-an {
+            0% { filter: drop-shadow(0 0 2px #2196F3); }
+            50% { filter: drop-shadow(0 0 15px #2196F3); }
+            100% { filter: drop-shadow(0 0 2px #2196F3); }
         }
 
-        .wagon.active-target {
-            animation: pulse 1.5s infinite;
+        .train-a .wagon.active-target {
+            animation: pulse-a 1.5s infinite;
             cursor: pointer;
+        }
+
+        .train-an .wagon.active-target {
+            animation: pulse-an 1.5s infinite;
+            cursor: pointer;
+        }
+
+        .wagon.active-target.drag-over {
+            transform: scale(1.1) translateY(-5px);
+            transition: all 0.2s;
         }
 
         .score-board {
@@ -195,14 +203,12 @@
 
     <div class="railway-top">
         <div class="train train-a" id="trainA">
-            <!-- ПАРОВОЗ А -->
             <div class="locomotive loco-a">A</div>
         </div>
     </div>
 
     <div class="railway-bottom">
         <div class="train train-an" id="trainAN">
-            <!-- ПАРОВОЗ AN -->
             <div class="locomotive loco-an">AN</div>
         </div>
     </div>
@@ -290,14 +296,25 @@
 
         animateTrains();
 
-        // СОЗДАНИЕ ВАГОНА
+        // =====================================================================
+        // 👇👇👇 СЮДА ВСТАВЬТЕ ССЫЛКИ НА ВАШИ КАРТИНКИ ВАГОНОВ 👇👇👇
+        // =====================================================================
+        // Для верхнего поезда (Артикль A) - например, зеленый вагон
+        const WAGON_IMG_A = "Вагон2-Photoroom.png"; 
+        
+        // Для нижнего поезда (Артикль AN) - например, синий или красный вагон
+        const WAGON_IMG_AN = "Вагон3-Photoroom.png"; 
+        // =====================================================================
+
         function createWagon(trainElement, articleType) {
             const wagon = document.createElement('div');
             wagon.className = 'wagon active-target';
             wagon.dataset.article = articleType;
             
-            // Убедитесь, что название файла правильное (регистр букв важен!)
-            wagon.innerHTML = '<img src="Вагон2-Photoroom.png" alt="Вагон">';
+            // Выбираем картинку в зависимости от поезда
+            let imgSrc = (articleType === 'a') ? WAGON_IMG_A : WAGON_IMG_AN;
+            
+            wagon.innerHTML = `<img src="${imgSrc}" alt="Вагон">`;
             
             trainElement.appendChild(wagon);
             return wagon;
@@ -344,21 +361,17 @@
                     score += 10;
                     scoreElement.textContent = score;
                     
-                    // Вагон становится заполненным
                     wagon.classList.remove('active-target');
                     wagon.classList.add('filled');
                     
-                    // Добавляем слово ПОВЕРХ картинки вагона
                     const textOverlay = document.createElement('div');
                     textOverlay.className = 'wagon-text';
                     textOverlay.textContent = currentWord.word;
                     wagon.appendChild(textOverlay);
                     
-                    // Отключаем перетаскивание в этот вагон
                     wagon.style.pointerEvents = 'none';
 
                     const trainElement = wagon.closest('.train');
-                    // Добавляем новый вагон, если пустых не осталось
                     if (!hasActiveWagon(trainElement)) {
                         const newWagon = createWagon(trainElement, targetArticle);
                         setupDropEvents(newWagon);
