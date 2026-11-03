@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Поезд Артиклей: Игра</title>
+    <title>Поезд Артиклей: Собираем вагоны</title>
     <style>
         body {
             margin: 0;
@@ -12,34 +12,33 @@
             font-family: 'Comic Sans MS', 'Arial', sans-serif;
             overflow: hidden; 
             height: 100vh;
-            user-select: none; /* Запрещаем выделять текст при перетаскивании */
+            user-select: none;
         }
 
-        /* ---------------- ИНТЕРФЕЙС ---------------- */
         h1 {
             text-align: center;
             color: #333;
             margin-top: 20px;
+            font-size: 2rem;
         }
 
-        /* Зона, куда падает слово (Центр) */
         .drop-zone {
             position: absolute;
-            top: 40%;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 250px;
             height: 100px;
             border: 4px dashed #999;
             border-radius: 15px;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 20;
+            z-index: 50;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
         }
 
-        /* Карточка со словом */
         .word-card {
             background-color: #fff;
             border: 3px solid #333;
@@ -51,6 +50,7 @@
             cursor: grab;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             transition: transform 0.1s;
+            z-index: 60;
         }
         
         .word-card:active {
@@ -58,31 +58,26 @@
             transform: scale(1.1);
         }
 
-        /* ---------------- ЖЕЛЕЗНАЯ ДОРОГА И ПОЕЗДА ---------------- */
-        
-        /* Верхние рельсы (для поезда А) */
         .railway-top {
             position: absolute;
-            top: 15%;
+            top: 12%;
             width: 100%;
-            height: 250px;
+            height: 180px;
             border-bottom: 8px solid #555;
             background-color: #d2d2d2;
             overflow: hidden;
         }
 
-        /* Нижние рельсы (для поезда AN) */
         .railway-bottom {
             position: absolute;
-            bottom: 15%;
+            bottom: 12%;
             width: 100%;
-            height: 250px;
+            height: 180px;
             border-top: 8px solid #555;
             background-color: #d2d2d2;
             overflow: hidden;
         }
 
-        /* Общие стили для поездов */
         .train {
             display: flex;
             align-items: center;
@@ -90,87 +85,65 @@
             height: 100%;
         }
 
-        /* Поезд "A" едет влево */
-        .train-a {
-            right: -400px;
-            animation: moveLeft 12s linear infinite;
-        }
+        .train-a { flex-direction: row-reverse; }
+        .train-an { flex-direction: row; }
 
-        /* Поезд "AN" едет вправо */
-        .train-an {
-            left: -400px;
-            animation: moveRight 12s linear infinite;
-        }
-
-        /* Анимация остановки поезда */
-        .train.paused {
-            animation-play-state: paused;
-        }
-
-        /* Визуализация локомотива (пока без картинок) */
         .locomotive {
-            width: 250px;
-            height: 180px;
-            border-radius: 20px 20px 5px 5px;
+            width: 150px;
+            height: 110px;
+            border-radius: 15px 15px 5px 5px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 6rem;
+            font-size: 4rem;
             font-weight: 900;
             color: white;
-            box-shadow: inset 0 -10px 0 rgba(0,0,0,0.2);
-            position: relative;
+            box-shadow: inset 0 -8px 0 rgba(0,0,0,0.2);
             z-index: 10;
+            flex-shrink: 0;
         }
 
-        /* Стиль локомотива А */
-        .loco-a {
-            background-color: #4CAF50; /* Зеленый */
-            border: 5px solid #2E7D32;
-        }
+        .loco-a { background-color: #4CAF50; border: 4px solid #2E7D32; }
+        .loco-an { background-color: #2196F3; border: 4px solid #1565C0; }
 
-        /* Стиль локомотива AN */
-        .loco-an {
-            background-color: #2196F3; /* Синий */
-            border: 5px solid #1565C0;
-        }
-
-        /* Прицепленные вагоны (визуальный эффект) */
         .wagon {
-            width: 200px;
-            height: 150px;
+            width: 120px;
+            height: 90px;
             background-color: #f0f0f0;
-            border: 5px solid #999;
-            border-radius: 10px;
-            margin: 0 -5px; /* Сцепка */
+            border: 4px solid #999;
+            border-radius: 8px;
             position: relative;
             z-index: 5;
             display: flex;
             justify-content: center;
             align-items: center;
             color: #aaa;
-            font-size: 1.2rem;
+            font-size: 1rem;
+            flex-shrink: 0;
         }
 
-        /* Визуальный эффект "ловушки" (подсветка при наведении) */
-        .drop-target.drag-over {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px 10px rgba(255, 235, 59, 0.8);
-            transition: all 0.2s;
+        .train-a .wagon { margin-right: -4px; }
+        .train-an .wagon { margin-left: -4px; }
+
+        .wagon.active-target {
+            border-color: #ff9800;
+            background-color: #fff3e0;
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
+            animation: pulse 1.5s infinite;
         }
 
-        /* Анимации движения */
-        @keyframes moveLeft {
-            0% { right: -600px; }
-            100% { right: 100%; }
+        .wagon.drag-over {
+            transform: scale(1.1);
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
         }
 
-        @keyframes moveRight {
-            0% { left: -600px; }
-            100% { left: 100%; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 152, 0, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
         }
 
-        /* Очки */
         .score-board {
             position: absolute;
             top: 20px;
@@ -188,45 +161,67 @@
 </head>
 <body>
 
-    <div class="score-board">Счет: <span id="score">0</span></div>
-    <h1>Перетащи слово на правильный паровоз!</h1>
+    <!-- ========================================================= -->
+    <!-- 👇👇👇 СЮДА ВСТАВЬТЕ СВОЙ ЗВУК 👇👇👇 -->
+    <!-- ========================================================= -->
+    <!-- 
+        1. Скачайте звук гудка (например, horn.mp3) и положите его в ту же папку, что и этот HTML-файл.
+        2. В атрибуте src напишите название файла: src="horn.mp3"
+        
+        Если вы загружаете звук на GitHub, ссылка будет выглядеть так:
+        <audio id="hornSound" src="https://raw.githubusercontent.com/ВАШ_НИК/ВАШ_РЕПОЗИТОРИЙ/main/horn.mp3"></audio>
+    -->
+    <audio id="hornSound" src="ВСТАВЬТЕ_ЗДЕСЬ_ССЫЛКУ_ИЛИ_НАЗВАНИЕ_ФАЙЛА.mp3"></audio>
+    <!-- ========================================================= -->
 
-    <!-- ВЕРХНИЙ ПОЕЗД (A) -->
+
+    <div class="score-board">Счет: <span id="score">0</span></div>
+    <h1>Перетащи слово в первый вагон поезда!</h1>
+
     <div class="railway-top">
         <div class="train train-a" id="trainA">
-            <div class="locomotive loco-a drop-target" data-article="a">A</div>
-            <div class="wagon">вагон</div>
-            <div class="wagon">вагон</div>
+            <div class="locomotive loco-a">A</div>
         </div>
     </div>
 
-    <!-- НИЖНИЙ ПОЕЗД (AN) -->
     <div class="railway-bottom">
         <div class="train train-an" id="trainAN">
-            <div class="locomotive loco-an drop-target" data-article="an">AN</div>
-            <div class="wagon">вагон</div>
-            <div class="wagon">вагон</div>
+            <div class="locomotive loco-an">AN</div>
         </div>
     </div>
 
-    <!-- ЦЕНТРАЛЬНАЯ ЗОНА СО СЛОВОМ -->
     <div class="drop-zone" id="dropZone">
         <div class="word-card" id="wordCard" draggable="true">Cat</div>
     </div>
 
     <script>
-        // Словарь слов для игры
         const words = [
-            { word: "Apple", article: "an" },
-            { word: "Cat", article: "a" },
-            { word: "Elephant", article: "an" },
-            { word: "Dog", article: "a" },
-            { word: "Orange", article: "an" },
-            { word: "Book", article: "a" },
             { word: "Ant", article: "an" },
-            { word: "Car", article: "a" },
+            { word: "Bed", article: "a" },
+            { word: "Cat", article: "a" },
+            { word: "Dog", article: "a" },
             { word: "Egg", article: "an" },
-            { word: "Jug", article: "a" }
+            { word: "Flag", article: "a" },
+            { word: "Glass", article: "a" },
+            { word: "Horse", article: "a" },
+            { word: "Ink", article: "an" },
+            { word: "Jug", article: "a" },
+            { word: "Kangaroo", article: "a" },
+            { word: "Lamp", article: "a" },
+            { word: "Mouse", article: "a" },
+            { word: "Nest", article: "a" },
+            { word: "Orange", article: "an" },
+            { word: "Pin", article: "a" },
+            { word: "Queen", article: "a" },
+            { word: "Rabbit", article: "a" },
+            { word: "Snake", article: "a" },
+            { word: "Tree", article: "a" },
+            { word: "Umbrella", article: "an" },
+            { word: "Vest", article: "a" },
+            { word: "Window", article: "a" },
+            { word: "Box", article: "a" },
+            { word: "Yacht", article: "a" },
+            { word: "Zip", article: "a" }
         ];
 
         let currentWord = null;
@@ -238,93 +233,174 @@
         
         const trainA = document.getElementById('trainA');
         const trainAN = document.getElementById('trainAN');
-        const targets = document.querySelectorAll('.drop-target');
 
-        // Функция загрузки нового слова
-        function loadNewWord() {
-            // Выбираем случайное слово
-            const randomIndex = Math.floor(Math.random() * words.length);
-            currentWord = words[randomIndex];
-            
-            wordCard.textContent = currentWord.word;
-            wordCard.style.display = 'block';
-            
-            // Возвращаем карточку в центр (на случай, если она осталась где-то)
-            dropZone.appendChild(wordCard);
+        // Находим наш аудио-элемент
+        const hornSound = document.getElementById('hornSound');
+
+        let posA = window.innerWidth * 0.2; 
+        let posAN = window.innerWidth * 0.5; 
+        
+        let speedA = 0.75; 
+        let speedAN = -0.75; 
+        
+        let isPausedA = false;
+        let isPausedAN = false;
+
+        // --- ФУНКЦИЯ ЗВУКА ---
+        function playHorn() {
+            if (hornSound) {
+                // Сбрасываем звук в начало (если он еще играет)
+                hornSound.currentTime = 0; 
+                // Воспроизводим
+                hornSound.play().catch(error => {
+                    console.log("Браузер заблокировал звук или файл не найден:", error);
+                });
+            }
         }
 
-        // Инициализация первого слова
-        loadNewWord();
+        // --- АНИМАЦИЯ ПОЕЗДОВ ---
+        function animateTrains() {
+            if (!isPausedA) {
+                posA += speedA;
+                if (posA > window.innerWidth) {
+                    posA = -trainA.offsetWidth - 50;
+                    resetTrain(trainA, 'a');
+                }
+                trainA.style.left = posA + 'px';
+            }
 
-        // --- ЛОГИКА DRAG AND DROP ---
+            if (!isPausedAN) {
+                posAN += speedAN;
+                if (posAN < -trainAN.offsetWidth) {
+                    posAN = window.innerWidth + 50;
+                    resetTrain(trainAN, 'an');
+                }
+                trainAN.style.left = posAN + 'px';
+            }
 
-        // 1. Начало перетаскивания
-        wordCard.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', currentWord.article);
-            e.dataTransfer.effectAllowed = 'move';
-        });
+            requestAnimationFrame(animateTrains);
+        }
 
-        // 2. Наведение на локомотив
-        targets.forEach(target => {
-            target.addEventListener('dragover', (e) => {
-                e.preventDefault(); // Разрешаем сброс
-                target.classList.add('drag-over'); // Подсветка
-            });
+        animateTrains();
 
-            target.addEventListener('dragleave', () => {
-                target.classList.remove('drag-over');
-            });
+        // --- ЛОГИКА ИГРЫ ---
 
-            // 3. Сброс (отпускание мышки)
-            target.addEventListener('drop', (e) => {
+        function createWagon(trainElement, articleType) {
+            const wagon = document.createElement('div');
+            wagon.className = 'wagon active-target';
+            wagon.dataset.article = articleType;
+            wagon.textContent = "Кинь сюда";
+            
+            trainElement.appendChild(wagon);
+            return wagon;
+        }
+
+        function hasActiveWagon(trainElement) {
+            return trainElement.querySelector('.active-target') !== null;
+        }
+
+        function initTrains() {
+            const wagonA = createWagon(trainA, 'a');
+            setupDropEvents(wagonA);
+            
+            const wagonAN = createWagon(trainAN, 'an');
+            setupDropEvents(wagonAN);
+        }
+
+        function resetTrain(trainElement, articleType) {
+            const oldWagons = trainElement.querySelectorAll('.wagon');
+            oldWagons.forEach(w => w.remove());
+
+            const newWagon = createWagon(trainElement, articleType);
+            setupDropEvents(newWagon);
+        }
+
+        function setupDropEvents(wagon) {
+            wagon.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                target.classList.remove('drag-over');
+                wagon.classList.add('drag-over');
+            });
 
-                const targetArticle = target.getAttribute('data-article'); // "a" или "an"
-                const wordArticle = currentWord.article; // Правильный ответ
+            wagon.addEventListener('dragleave', () => {
+                wagon.classList.remove('drag-over');
+            });
+
+            wagon.addEventListener('drop', (e) => {
+                e.preventDefault();
+                wagon.classList.remove('drag-over');
+
+                const targetArticle = wagon.dataset.article;
+                const wordArticle = currentWord.article;
 
                 if (targetArticle === wordArticle) {
-                    // ПРАВИЛЬНО
+                    // ПРАВИЛЬНЫЙ ОТВЕТ
                     score += 10;
                     scoreElement.textContent = score;
                     
-                    // Эффект успеха
-                    target.style.transform = "scale(1.1)";
-                    setTimeout(() => { target.style.transform = "scale(1)"; }, 200);
-                    
-                    // Прячем карточку и грузим новое слово
+                    wagon.classList.remove('active-target');
+                    wagon.style.backgroundColor = '#c8e6c9';
+                    wagon.style.borderColor = '#4CAF50';
+                    wagon.textContent = currentWord.word;
+                    wagon.style.color = '#2E7D32';
+                    wagon.style.fontWeight = 'bold';
+                    wagon.style.pointerEvents = 'none';
+
+                    const trainElement = wagon.closest('.train');
+                    if (!hasActiveWagon(trainElement)) {
+                        const newWagon = createWagon(trainElement, targetArticle);
+                        setupDropEvents(newWagon);
+                    }
+
                     wordCard.style.display = 'none';
                     setTimeout(loadNewWord, 300);
 
                 } else {
-                    // НЕПРАВИЛЬНО
-                    // Останавливаем тот поезд, на который уронили
-                    const trainToPause = target.closest('.train');
-                    trainToPause.classList.add('paused');
+                    // ОШИБКА 
+                    playHorn(); // Воспроизводим гудок
+
+                    if (targetArticle === 'a') {
+                        isPausedA = true;
+                    } else {
+                        isPausedAN = true;
+                    }
                     
-                    // Эффект ошибки (тряска)
                     wordCard.style.transform = "translateX(10px)";
                     setTimeout(() => { wordCard.style.transform = "translateX(-10px)"; }, 50);
                     setTimeout(() => { wordCard.style.transform = "translateX(0)"; }, 100);
 
-                    // Возвращаем карточку в центр через секунду
                     setTimeout(() => {
                         dropZone.appendChild(wordCard);
                     }, 500);
                 }
             });
+        }
+
+        function loadNewWord() {
+            const randomIndex = Math.floor(Math.random() * words.length);
+            currentWord = words[randomIndex];
+            wordCard.textContent = currentWord.word;
+            wordCard.style.display = 'block';
+            dropZone.appendChild(wordCard);
+            
+            isPausedA = false;
+            isPausedAN = false;
+        }
+
+        initTrains();
+        loadNewWord();
+
+        wordCard.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', currentWord.article);
+            e.dataTransfer.effectAllowed = 'move';
         });
 
-        // Возможность перетаскивать карточку обратно, если она упала мимо
         document.body.addEventListener('dragover', (e) => e.preventDefault());
         document.body.addEventListener('drop', (e) => {
             e.preventDefault();
-            // Если уронили мимо цели, возвращаем в зону
-            if (e.target !== wordCard && !e.target.classList.contains('drop-target')) {
+            if (!e.target.classList.contains('wagon')) {
                 dropZone.appendChild(wordCard);
             }
         });
-
     </script>
 </body>
 </html>
