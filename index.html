@@ -88,6 +88,7 @@
         .train-a { flex-direction: row-reverse; }
         .train-an { flex-direction: row; }
 
+        /* Стили для паровозов */
         .locomotive {
             width: 150px;
             height: 110px;
@@ -106,6 +107,7 @@
         .loco-a { background-color: #4CAF50; border: 4px solid #2E7D32; }
         .loco-an { background-color: #2196F3; border: 4px solid #1565C0; }
 
+        /* Стили для вагонов */
         .wagon {
             width: 120px;
             height: 90px;
@@ -161,32 +163,33 @@
 </head>
 <body>
 
-    <!-- ========================================================= -->
-    <!-- 👇👇👇 СЮДА ВСТАВЬТЕ СВОЙ ЗВУК 👇👇👇 -->
-    <!-- ========================================================= -->
-    <!-- 
-        1. Скачайте звук гудка (например, horn.mp3) и положите его в ту же папку, что и этот HTML-файл.
-        2. В атрибуте src напишите название файла: src="horn.mp3"
-        
-        Если вы загружаете звук на GitHub, ссылка будет выглядеть так:
-        <audio id="hornSound" src="https://raw.githubusercontent.com/ВАШ_НИК/ВАШ_РЕПОЗИТОРИЙ/main/horn.mp3"></audio>
-    -->
-    <audio id="hornSound" src="https://raw.githubusercontent.com/aexqodev/Train/main/3-1.mp3"></audio>
-    <!-- ========================================================= -->
-
+    <!-- ЗВУК -->
+    <audio id="hornSound" src="https://raw.githubusercontent.com/aexqodev/Train/main/3-1.mp3" preload="auto"></audio>
 
     <div class="score-board">Счет: <span id="score">0</span></div>
     <h1>Перетащи слово в первый вагон поезда!</h1>
 
     <div class="railway-top">
         <div class="train train-a" id="trainA">
+            
+            <!-- ================================================== -->
+            <!-- 👇👇👇 ЗАМЕНИТЕ ЭТО НА КАРТИНКУ ПАРОВОЗА A 👇👇👇 -->
+            <!-- ================================================== -->
+            <!-- Пример: <img src="https://raw.githubusercontent.com/.../loco_a.png" class="locomotive" style="object-fit: contain; background: none; border: none;"> -->
             <div class="locomotive loco-a">A</div>
+            
         </div>
     </div>
 
     <div class="railway-bottom">
         <div class="train train-an" id="trainAN">
+            
+            <!-- ================================================== -->
+            <!-- 👇👇👇 ЗАМЕНИТЕ ЭТО НА КАРТИНКУ ПАРОВОЗА AN 👇👇👇 -->
+            <!-- ================================================== -->
+            <!-- Пример: <img src="https://raw.githubusercontent.com/.../loco_an.png" class="locomotive" style="object-fit: contain; background: none; border: none;"> -->
             <div class="locomotive loco-an">AN</div>
+            
         </div>
     </div>
 
@@ -196,32 +199,15 @@
 
     <script>
         const words = [
-            { word: "Ant", article: "an" },
-            { word: "Bed", article: "a" },
-            { word: "Cat", article: "a" },
-            { word: "Dog", article: "a" },
-            { word: "Egg", article: "an" },
-            { word: "Flag", article: "a" },
-            { word: "Glass", article: "a" },
-            { word: "Horse", article: "a" },
-            { word: "Ink", article: "an" },
-            { word: "Jug", article: "a" },
-            { word: "Kangaroo", article: "a" },
-            { word: "Lamp", article: "a" },
-            { word: "Mouse", article: "a" },
-            { word: "Nest", article: "a" },
-            { word: "Orange", article: "an" },
-            { word: "Pin", article: "a" },
-            { word: "Queen", article: "a" },
-            { word: "Rabbit", article: "a" },
-            { word: "Snake", article: "a" },
-            { word: "Tree", article: "a" },
-            { word: "Umbrella", article: "an" },
-            { word: "Vest", article: "a" },
-            { word: "Window", article: "a" },
-            { word: "Box", article: "a" },
-            { word: "Yacht", article: "a" },
-            { word: "Zip", article: "a" }
+            { word: "Ant", article: "an" }, { word: "Bed", article: "a" }, { word: "Cat", article: "a" },
+            { word: "Dog", article: "a" }, { word: "Egg", article: "an" }, { word: "Flag", article: "a" },
+            { word: "Glass", article: "a" }, { word: "Horse", article: "a" }, { word: "Ink", article: "an" },
+            { word: "Jug", article: "a" }, { word: "Kangaroo", article: "a" }, { word: "Lamp", article: "a" },
+            { word: "Mouse", article: "a" }, { word: "Nest", article: "a" }, { word: "Orange", article: "an" },
+            { word: "Pin", article: "a" }, { word: "Queen", article: "a" }, { word: "Rabbit", article: "a" },
+            { word: "Snake", article: "a" }, { word: "Tree", article: "a" }, { word: "Umbrella", article: "an" },
+            { word: "Vest", article: "a" }, { word: "Window", article: "a" }, { word: "Box", article: "a" },
+            { word: "Yacht", article: "a" }, { word: "Zip", article: "a" }
         ];
 
         let currentWord = null;
@@ -230,35 +216,43 @@
         const wordCard = document.getElementById('wordCard');
         const dropZone = document.getElementById('dropZone');
         const scoreElement = document.getElementById('score');
-        
         const trainA = document.getElementById('trainA');
         const trainAN = document.getElementById('trainAN');
-
-        // Находим наш аудио-элемент
         const hornSound = document.getElementById('hornSound');
+        let audioUnlocked = false;
 
         let posA = window.innerWidth * 0.2; 
         let posAN = window.innerWidth * 0.5; 
-        
         let speedA = 0.75; 
         let speedAN = -0.75; 
-        
         let isPausedA = false;
         let isPausedAN = false;
 
-        // --- ФУНКЦИЯ ЗВУКА ---
         function playHorn() {
-            if (hornSound) {
-                // Сбрасываем звук в начало (если он еще играет)
-                hornSound.currentTime = 0; 
-                // Воспроизводим
-                hornSound.play().catch(error => {
-                    console.log("Браузер заблокировал звук или файл не найден:", error);
-                });
+            if (!hornSound) return;
+            hornSound.currentTime = 0; 
+            let playPromise = hornSound.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => console.warn("Звук не играет:", error));
             }
         }
 
-        // --- АНИМАЦИЯ ПОЕЗДОВ ---
+        function unlockAudio() {
+            if (!audioUnlocked && hornSound) {
+                hornSound.volume = 0;
+                hornSound.play().then(() => {
+                    hornSound.pause();
+                    hornSound.currentTime = 0;
+                    hornSound.volume = 1;
+                    audioUnlocked = true;
+                }).catch(e => {});
+            }
+        }
+
+        document.body.addEventListener('click', unlockAudio);
+        document.body.addEventListener('touchstart', unlockAudio);
+        document.body.addEventListener('dragstart', unlockAudio);
+
         function animateTrains() {
             if (!isPausedA) {
                 posA += speedA;
@@ -277,19 +271,23 @@
                 }
                 trainAN.style.left = posAN + 'px';
             }
-
             requestAnimationFrame(animateTrains);
         }
 
         animateTrains();
 
-        // --- ЛОГИКА ИГРЫ ---
-
         function createWagon(trainElement, articleType) {
             const wagon = document.createElement('div');
             wagon.className = 'wagon active-target';
             wagon.dataset.article = articleType;
-            wagon.textContent = "Кинь сюда";
+            
+            // =========================================================
+            // 👇👇👇 СЮДА ВСТАВЬТЕ ССЫЛКУ НА ВАШУ КАРТИНКУ ВАГОНА 👇👇👇
+            // =========================================================
+            // Было: wagon.textContent = "Кинь сюда";
+            // Стало: 
+            wagon.innerHTML = '<img src="Вагон2-Photoroom.png" style="width: 100%; height: 100%; object-fit: contain;">';
+            // =========================================================
             
             trainElement.appendChild(wagon);
             return wagon;
@@ -302,7 +300,6 @@
         function initTrains() {
             const wagonA = createWagon(trainA, 'a');
             setupDropEvents(wagonA);
-            
             const wagonAN = createWagon(trainAN, 'an');
             setupDropEvents(wagonAN);
         }
@@ -310,7 +307,6 @@
         function resetTrain(trainElement, articleType) {
             const oldWagons = trainElement.querySelectorAll('.wagon');
             oldWagons.forEach(w => w.remove());
-
             const newWagon = createWagon(trainElement, articleType);
             setupDropEvents(newWagon);
         }
@@ -333,14 +329,19 @@
                 const wordArticle = currentWord.article;
 
                 if (targetArticle === wordArticle) {
-                    // ПРАВИЛЬНЫЙ ОТВЕТ
                     score += 10;
                     scoreElement.textContent = score;
                     
                     wagon.classList.remove('active-target');
                     wagon.style.backgroundColor = '#c8e6c9';
                     wagon.style.borderColor = '#4CAF50';
-                    wagon.textContent = currentWord.word;
+                    
+                    // Если вы заменили картинку вагона выше, то при правильном ответе
+                    // картинка вагона заменится на само слово. 
+                    // Если хотите, чтобы картинка оставалась, а слово появлялось ПОВЕРХ, 
+                    // удалите строку ниже.
+                    wagon.textContent = currentWord.word; 
+                    
                     wagon.style.color = '#2E7D32';
                     wagon.style.fontWeight = 'bold';
                     wagon.style.pointerEvents = 'none';
@@ -355,9 +356,7 @@
                     setTimeout(loadNewWord, 300);
 
                 } else {
-                    // ОШИБКА 
-                    playHorn(); // Воспроизводим гудок
-
+                    playHorn(); 
                     if (targetArticle === 'a') {
                         isPausedA = true;
                     } else {
@@ -381,7 +380,6 @@
             wordCard.textContent = currentWord.word;
             wordCard.style.display = 'block';
             dropZone.appendChild(wordCard);
-            
             isPausedA = false;
             isPausedAN = false;
         }
@@ -390,6 +388,7 @@
         loadNewWord();
 
         wordCard.addEventListener('dragstart', (e) => {
+            unlockAudio();
             e.dataTransfer.setData('text/plain', currentWord.article);
             e.dataTransfer.effectAllowed = 'move';
         });
