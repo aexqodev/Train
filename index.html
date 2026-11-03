@@ -10,7 +10,7 @@
             padding: 0;
             background-color: #e6f2ff; /* Светло-голубой фон (небо) */
             font-family: 'Comic Sans MS', 'Arial', sans-serif;
-            overflow: hidden; /* Убираем прокрутку, чтобы поезд ездил ровно */
+            overflow: hidden; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -33,7 +33,7 @@
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             text-align: center;
-            font-size: 2.5rem; /* Увеличили шрифт на табло */
+            font-size: 2.5rem; 
             font-weight: bold;
             color: #333;
             min-height: 100px;
@@ -75,7 +75,7 @@
         /* Контейнер для железной дороги */
         .railway {
             width: 100%;
-            height: 400px; /* Увеличили высоту дороги */
+            height: 400px; 
             position: absolute;
             bottom: 50px;
             overflow: hidden;
@@ -89,9 +89,9 @@
             display: flex;
             align-items: flex-end;
             position: absolute;
-            bottom: 10px; /* Чуть выше рельсов */
+            bottom: 10px; 
             left: 100%;
-            animation: moveTrain 25s linear infinite; /* Увеличили время проезда (медленнее), т.к. вагоны больше */
+            animation: moveTrain 25s linear infinite; 
             cursor: pointer;
         }
 
@@ -102,8 +102,8 @@
 
         /* Картинки вагонов */
         .train img {
-            height: 300px; /* ВАГОНЫ СТАЛИ БОЛЬШЕ (было 150px) */
-            margin-right: -10px; /* Отрицательный отступ, чтобы вагоны красиво сцепились */
+            height: 300px; 
+            margin-right: -10px; 
             object-fit: contain;
             transition: transform 0.2s, filter 0.2s;
         }
@@ -117,7 +117,7 @@
         /* Анимация движения */
         @keyframes moveTrain {
             0% { left: 100%; }
-            100% { left: -200%; } /* Уезжает влево, учитывая бОльшую ширину картинок */
+            100% { left: -200%; } 
         }
     </style>
 </head>
@@ -141,18 +141,18 @@
     </div>
 
     <script>
-        // ВАШИ ССЫЛКИ НА КАРТИНКИ
-        const rawBaseUrl = "https://raw.githubusercontent.com/aexqodev/ВАШЕ_НАЗВАНИЕ_РЕПОЗИТОРИЯ/main/";
-        
+        // ВАШИ КАРТИНКИ И НАЗВАНИЯ ВАГОНОВ
         const trainCars = [
             { 
                 id: 'vagon1', 
-                img: rawBaseUrl + 'Baron2-Photoroom.png', 
+                // Ссылка на ваш первый файл
+                img: 'https://raw.githubusercontent.com/aexqodev/Train/main/Baron2-Photoroom.png', 
                 text: 'an egg, an orange, an ant' 
             },
             { 
                 id: 'vagon2', 
-                img: rawBaseUrl + 'Baron3-Photoroom.png', 
+                // Ссылка на ваш второй файл
+                img: 'https://raw.githubusercontent.com/aexqodev/Train/main/Baron3-Photoroom.png', 
                 text: 'a cat, a nest, a jug, a lamp' 
             }
         ];
